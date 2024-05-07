@@ -11,8 +11,8 @@ stdout_next_line = false
 
 File.open('build/subtitles.lst', 'a+') do |f|
   $stdin.read.each_line do |line|
-    unless (matches = line.chomp.force_encoding('ASCII-8BIT').match(INSTR_REGEX))
-      stdout_next_line = true if /^\s*\d+\s+#:bpt/.match?(line.force_encoding('ASCII-8BIT'))
+    unless (matches = line.b.chomp.match(INSTR_REGEX))
+      stdout_next_line = true if /^\s*\d+\s+;:bpt/.match?(line.b)
       next
     end
 
@@ -35,15 +35,3 @@ File.open('build/subtitles.lst', 'a+') do |f|
     stdout_next_line = false if stdout_next_line
   end
 end
-
-# $stdin.read.each_line do |line|
-#   if (matches = line.chomp.match(INSTR_REGEX))
-#     print "#{matches[:ln]}  "
-#     print "#{matches[:addr].to_i(16).to_s(8).rjust(7, '0')}  "
-#     instr = convert_opcode(matches[:opcode])
-#     print "#{instr.shift}       "
-#     puts "#{matches[:text]}"
-#   else
-#     print line
-#   end
-# end
