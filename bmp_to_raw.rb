@@ -101,10 +101,9 @@ elsif bits_per_pixel == 4
     (0...row_width).each do |col_idx|
       bitmap_byte = bitmap[row_idx + col_idx]
 
-      nibble = bitmap_byte >> 4
-      bp0_byte |= (nibble >> 0 & 1) << bit_number
-      bp1_byte |= (nibble >> 1 & 1) << bit_number
-      bp2_byte |= (nibble >> 2 & 1) << bit_number
+      bp0_byte |= (nibble >> 4 & 1) << bit_number
+      bp1_byte |= (nibble >> 5 & 1) << bit_number
+      bp2_byte |= (nibble >> 6 & 1) << bit_number
 
       bit_number += 1
       nibble = bitmap_byte

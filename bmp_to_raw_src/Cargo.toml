@@ -1,0 +1,12 @@
+[package]
+name = "bmp_to_raw"
+version = "0.2.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.5.4", features = ["derive"] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+

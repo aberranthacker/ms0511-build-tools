@@ -5,7 +5,7 @@ and adding it to projects as a Git sub-module.
 
 ## To add to a project as sub-module execute:
 ```sh
-git submodule add git@github.com:aberranthacker/ms0511-build-tools.git build_tools/
+git submodule add git@github.com:aberranthacker/ms0511-build-tools.git tools
 ```
 
 ## The repository also includes executables for following software:
