@@ -16,7 +16,7 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-fileslist = File.readlines(options.fileslist_filename).map(&:chomp)
+fileslist = File.readlines(options.fileslist_filename, chomp: true)
 
 metadata = fileslist.map do |filename|
   [filename[6..-1], { address: 0, size: File.size(filename) }]

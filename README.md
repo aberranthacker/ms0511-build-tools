@@ -12,3 +12,4 @@ git submodule add git@github.com:aberranthacker/ms0511-build-tools.git tools
 * **lzsa**: https://github.com/emmanuel-marty/lzsa
 * **lzsa3**: https://github.com/imachug/lzsa3
 * **zx0** and **dzx0**: https://github.com/einar-saukas/ZX0
+* **rt11dsk**: https://github.com/nzeemin/ukncbtl-utils/

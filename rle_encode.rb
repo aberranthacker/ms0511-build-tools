@@ -1,6 +1,6 @@
 # The code is taken from
 # https://github.com/nzeemin/ukncbtl-utils/blob/master/Sav2Cartridge/Sav2Cart.cpp
-# One can write C in any laguage)
+# One can write C in any language)
 
 module Encoders
   module Rle

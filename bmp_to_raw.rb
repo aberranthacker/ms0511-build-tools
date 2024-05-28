@@ -34,10 +34,9 @@ unless (options.dst_filename = ARGV[1])
   exit
 end
 
-# https://github.com/bordeeinc/bmp-ruby
-# https://en.wikipedia.org/wiki/BMP_file_format
 bmp = File.binread(options.src_filename)
 
+# https://en.wikipedia.org/wiki/BMP_file_format
 signature          = bmp[0,2]
 pixel_array_offset = bmp[0x0A,4].unpack1('V') # 32-bit unsigned, VAX (little-endian) byte order
 image_width        = bmp[0x12,4].unpack1('V') # 32-bit unsigned, VAX (little-endian) byte order
@@ -48,12 +47,17 @@ compression        = bmp[0x1E,4].unpack1('V') # 32-bit unsigned, VAX (little-end
 image_size         = bmp[0x22,4].unpack1('V') # 32-bit unsigned, VAX (little-endian) byte order
 
 raise "#{options.src_filename} : Unknown file type." unless signature == 'BM'
-raise "#{options.src_filename} : Number of color planes other than 1 in not supported." unless planes == 1
+unless planes == 1
+  raise "#{options.src_filename} : Number of color planes other than 1" \
+        "is not supported."
+end
 unless [4, 8].include?(bits_per_pixel)
-  raise "#{options.src_filename} : #{bits_per_pixel} bits per pixel not supported, 4 or 8 bits only."
+  raise "#{options.src_filename} : #{bits_per_pixel} bits per pixel" \
+        " not supported, 4 or 8 bits only."
 end
 if bits_per_pixel < options.bpp
-  raise "#{options.src_filename} has #{bits_per_pixel}bpp, which is less than resulting #{options.bpp}bpp."
+  raise "#{options.src_filename} has #{bits_per_pixel}bpp," \ 
+        " which is less than resulting #{options.bpp}bpp."
 end
 raise "#{options.src_filename} : Compression is not supported." unless compression == 0
 if image_width % 8 != 0
@@ -86,10 +90,12 @@ if bits_per_pixel == 8
       if options.bpp == 1
         dst_bitmap.push(bp0_byte)
       elsif options.bpp == 2
-        dst_bitmap.push(bp1_byte << 8 | bp0_byte)
+        dst_bitmap.push(bp0_byte)
+        dst_bitmap.push(bp1_byte)
       elsif options.bpp == 3
         dst_bitmap.push(bp0_byte)
-        dst_bitmap.push(bp2_byte << 8 | bp1_byte)
+        dst_bitmap.push(bp1_byte)
+        dst_bitmap.push(bp2_byte)
       end
 
       bit_number = 0
@@ -116,10 +122,12 @@ elsif bits_per_pixel == 4
       if options.bpp == 1
         dst_bitmap.push(bp0_byte)
       elsif options.bpp == 2
-        dst_bitmap.push(bp1_byte << 8 | bp0_byte)
+        dst_bitmap.push(bp0_byte)
+        dst_bitmap.push(bp1_byte)
       elsif options.bpp == 3
         dst_bitmap.push(bp0_byte)
-        dst_bitmap.push(bp2_byte << 8 | bp1_byte)
+        dst_bitmap.push(bp1_byte)
+        dst_bitmap.push(bp2_byte)
       end
 
       bit_number = 0
@@ -128,12 +136,7 @@ elsif bits_per_pixel == 4
   end
 end
 
-bin = if options.bpp == 1
-        dst_bitmap.pack('C*') # 8-bit unsigned (unsigned char)
-      else
-        dst_bitmap.pack('v*') # 16-bit unsigned, VAX (little-endian) byte order
-      end
-File.binwrite(options.dst_filename, bin)
+File.binwrite(options.dst_filename, dst_bitmap.pack('C*')
 
 if options.verbose
   puts "#{options.src_filename} #{image_width}x#{image_height} #{options.bpp}bpp converted"
