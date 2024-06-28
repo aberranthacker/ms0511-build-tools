@@ -25,41 +25,43 @@ OptionParser.new do |opts|
 end.parse!
 
 unless (options.src_filename = ARGV[0])
-  puts "ERROR: Need to specify a file to process. Use -h for help"
+  puts 'ERROR: Need to specify a file to process. Use -h for help'
   exit
 end
 
 unless (options.dst_filename = ARGV[1])
-  puts "ERROR: Need to specify an output file. Use -h for help"
+  puts 'ERROR: Need to specify an output file. Use -h for help'
   exit
 end
 
 bmp = File.binread(options.src_filename)
 
 # https://en.wikipedia.org/wiki/BMP_file_format
-signature          = bmp[0,2]
-pixel_array_offset = bmp[0x0A,4].unpack1('V') # 32-bit unsigned, VAX (little-endian) byte order
-image_width        = bmp[0x12,4].unpack1('V') # 32-bit unsigned, VAX (little-endian) byte order
-image_height       = bmp[0x16,4].unpack1('V') # 32-bit unsigned, VAX (little-endian) byte order
-planes             = bmp[0x1A,2].unpack1('v') # 16-bit unsigned, VAX (little-endian) byte order
-bits_per_pixel     = bmp[0x1C,2].unpack1('v') # 16-bit unsigned, VAX (little-endian) byte order
-compression        = bmp[0x1E,4].unpack1('V') # 32-bit unsigned, VAX (little-endian) byte order
-image_size         = bmp[0x22,4].unpack1('V') # 32-bit unsigned, VAX (little-endian) byte order
+signature          = bmp[0, 2]
+pixel_array_offset = bmp[0x0A, 4].unpack1('V') # 32-bit unsigned, VAX (little-endian) byte order
+image_width        = bmp[0x12, 4].unpack1('V') # 32-bit unsigned, VAX (little-endian) byte order
+image_height       = bmp[0x16, 4].unpack1('V') # 32-bit unsigned, VAX (little-endian) byte order
+planes             = bmp[0x1A, 2].unpack1('v') # 16-bit unsigned, VAX (little-endian) byte order
+bits_per_pixel     = bmp[0x1C, 2].unpack1('v') # 16-bit unsigned, VAX (little-endian) byte order
+compression        = bmp[0x1E, 4].unpack1('V') # 32-bit unsigned, VAX (little-endian) byte order
+image_size         = bmp[0x22, 4].unpack1('V') # 32-bit unsigned, VAX (little-endian) byte order
 
 raise "#{options.src_filename} : Unknown file type." unless signature == 'BM'
+
 unless planes == 1
   raise "#{options.src_filename} : Number of color planes other than 1" \
-        "is not supported."
+        'is not supported.'
 end
 unless [4, 8].include?(bits_per_pixel)
   raise "#{options.src_filename} : #{bits_per_pixel} bits per pixel" \
-        " not supported, 4 or 8 bits only."
+        ' not supported, 4 or 8 bits only.'
 end
 if bits_per_pixel < options.bpp
-  raise "#{options.src_filename} has #{bits_per_pixel}bpp," \ 
+  raise "#{options.src_filename} has #{bits_per_pixel}bpp," \
         " which is less than resulting #{options.bpp}bpp."
 end
 raise "#{options.src_filename} : Compression is not supported." unless compression == 0
+
 if image_width % 8 != 0
   puts "#{options.src_filename} \u001b[31;1mWARNING\u001b[0m: " \
        "Image width #{image_width} is not multiple of 8"
@@ -87,19 +89,22 @@ if bits_per_pixel == 8
 
       next if (bit_number += 1) < 8
 
-      if options.bpp == 1
+      case options.bpp
+      when 1
         dst_bitmap.push(bp0_byte)
-      elsif options.bpp == 2
+      when 2
         dst_bitmap.push(bp0_byte)
         dst_bitmap.push(bp1_byte)
-      elsif options.bpp == 3
+      when 3
         dst_bitmap.push(bp0_byte)
         dst_bitmap.push(bp1_byte)
         dst_bitmap.push(bp2_byte)
       end
 
       bit_number = 0
-      bp0_byte, bp1_byte, bp2_byte = [0, 0, 0]
+      bp0_byte = 0
+      bp1_byte = 0
+      bp2_byte = 0
     end
   end
 elsif bits_per_pixel == 4
@@ -119,24 +124,27 @@ elsif bits_per_pixel == 4
 
       next if (bit_number += 1) < 8
 
-      if options.bpp == 1
+      case options.bpp
+      when 1
         dst_bitmap.push(bp0_byte)
-      elsif options.bpp == 2
+      when 2
         dst_bitmap.push(bp0_byte)
         dst_bitmap.push(bp1_byte)
-      elsif options.bpp == 3
+      when 3
         dst_bitmap.push(bp0_byte)
         dst_bitmap.push(bp1_byte)
         dst_bitmap.push(bp2_byte)
       end
 
       bit_number = 0
-      bp0_byte, bp1_byte, bp2_byte = [0, 0, 0]
+      bp0_byte = 0
+      bp1_byte = 0
+      bp2_byte = 0
     end
   end
 end
 
-File.binwrite(options.dst_filename, dst_bitmap.pack('C*')
+File.binwrite(options.dst_filename, dst_bitmap.pack('C*'))
 
 if options.verbose
   puts "#{options.src_filename} #{image_width}x#{image_height} #{options.bpp}bpp converted"

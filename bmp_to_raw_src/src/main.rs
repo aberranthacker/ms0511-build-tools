@@ -25,8 +25,12 @@ fn main() -> io::Result<()> {
         ])
         .get_matches();
 
+    let bpp: u8 = matches.get_one::<String>("bpp")
+        .map(|s| s.parse().expect("Failed to parse bpp as u8"))
+        .unwrap_or(2);
+
     let options = Options {
-        bpp: *matches.get_one::<u8>("bpp").unwrap_or(&2),
+        bpp,
         verbose: matches.get_flag("verbose"),
         src_filename: matches.get_one::<String>("SRC").unwrap().to_string(),
         dst_filename: matches.get_one::<String>("DST").unwrap().to_string(),
