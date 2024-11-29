@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Binary Sprite file format (CPC/ENT/ZX/SAM)
 #
 #     Akusprite files that have been saved for a platform such as the CPC will
@@ -43,12 +45,12 @@ header = []
 
 0.step(data_offset - 6, 6).each.with_index do |i, idx|
   rec = {
-    idx: idx,
+    idx:,
     height: file[i].ord,
     width: file[i + 1].ord,
     y_offset: file[i + 2].ord,
     settings: file[i + 3].ord,
-    offset: file[i + 4, 2].unpack1('v')
+    offset: file[i + 4, 2].unpack1('v'),
   }
   rec[:y_offset] = 7 if rec[:y_offset] == 255
 
@@ -66,5 +68,5 @@ header.each.with_index(1) do |md, idx|
   puts  "offset: #{md[:offset]}"
 
   sprite = file[md[:offset], md[:height] * md[:width]]
-  File.binwrite("#{options.out_prefix}-#{idx.to_s.rjust(2,'0')}", sprite)
+  File.binwrite("#{options.out_prefix}-#{idx.to_s.rjust(2, '0')}", sprite)
 end

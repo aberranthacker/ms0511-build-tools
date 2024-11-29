@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Mode 1, 320×200, 4 colors (each byte of video memory represents 4 pixels):
 # |     bit 7     |     bit 6     |     bit 5     |     bit 4     |
 # |pixel 0 (bit 1)|pixel 1 (bit 1)|pixel 2 (bit 1)|pixel 3 (bit 1)|

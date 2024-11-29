@@ -6,7 +6,8 @@ require_relative 'dsk_image_constants'
 options = Struct.new(:fileslist_filename, :map_filename, :updated_filename, :entry).new
 
 OptionParser.new do |opts|
-  opts.banner = 'Usage: update_disk_map.rb FILESLIST_FILENAME MAP_FILENAME UPDATED_FILENAME --entry n'
+  opts.banner = 'Usage: ' \
+                'update_disk_map.rb FILESLIST_FILENAME MAP_FILENAME UPDATED_FILENAME --entry n'
   options.fileslist_filename = opts.default_argv[0]
   options.map_filename = opts.default_argv[1]
   options.updated_filename = opts.default_argv[2]
@@ -19,12 +20,12 @@ end.parse!
 fileslist = File.readlines(options.fileslist_filename, chomp: true)
 
 metadata = fileslist.map do |filename|
-  [filename[6..-1], { address: 0, size: File.size(filename) }]
+  [filename[6..], { address: 0, size: File.size(filename) }]
 end.to_h
 
 File.read(options.map_filename).each_line do |line|
   fileslist.each do |file_name|
-    key = file_name[6..-1]
+    key = file_name[6..]
     if /0x\p{XDigit}{16}\s+#{key}/.match?(line)
       metadata[key].update(address: line[/0x\p{XDigit}{16}/].to_i(16))
     end
@@ -35,7 +36,7 @@ bootstrap_bin = File.binread(options.updated_filename).unpack('v*')
 
 current_block_num = 0
 
-metadata.each do |label, data|
+metadata.each_value do |data|
   address = data[:address]
   size = data[:size]
 

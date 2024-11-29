@@ -42,20 +42,16 @@ module BuildDskImage
   private
 
   def print_info(file_name, bin, target_size, sectors_used, col1_width)
-    binary_info = if File.exist?("#{file_name}._")
-                    File.read("#{file_name}._").split(',')
-                  else
-                    nil
-                  end
+    binary_info = File.read("#{file_name}._").split(',') if File.exist?("#{file_name}._")
 
     puts [
       file_name.ljust(col1_width, ' '),
       entry_address_str(binary_info),
       bin_size_str(binary_info, bin),
       ending_address_str(binary_info),
-      free_ram_str(binary_info, bin),
+      free_ram_str(binary_info, file_name),
       (target_size / 512).to_s.rjust(6, ' '),
-      sectors_used.to_s.rjust(5, ' ')
+      sectors_used.to_s.rjust(5, ' '),
     ].join(' ')
   end
 
@@ -76,16 +72,20 @@ module BuildDskImage
 
     ending_address = binary_info[2].chomp.to_i
     str = ending_address.to_s.rjust(6, ' ')
-    return str unless ending_address >= 56*1024
-    return "\u001b[31m#{str}\u001b[0m" unless ending_address >= 63*1024
+    return str unless ending_address >= 56 * 1024
+    return "\u001b[31m#{str}\u001b[0m" unless ending_address >= 63 * 1024
 
     "\u001b[31;1m#{str}\u001b[0m"
   end
 
-  def free_ram_str(binary_info, bin)
+  def free_ram_str(binary_info, file_name)
     return ' ' * 6 if binary_info.nil?
 
-    (56 * 1024 - binary_info[2].to_i).to_s.rjust(6, ' ')
+    if file_name.end_with?('ppu_module.bin')
+      (32 * 1024 - binary_info[2].to_i).to_s.rjust(6, ' ')
+    else
+      (56 * 1024 - binary_info[2].to_i).to_s.rjust(6, ' ')
+    end
   end
 end
 
