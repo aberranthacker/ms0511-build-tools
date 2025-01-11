@@ -113,7 +113,7 @@ fn main() -> io::Result<()> {
             for col_idx in 0..row_width {
                 let bitmap_byte = bitmap[row_idx + col_idx];
 
-                bp0_byte |= (bitmap_byte >> 0 & 1) << bit_number;
+                bp0_byte |= (bitmap_byte      & 1) << bit_number;
                 bp1_byte |= (bitmap_byte >> 1 & 1) << bit_number;
                 bp2_byte |= (bitmap_byte >> 2 & 1) << bit_number;
 
@@ -139,7 +139,7 @@ fn main() -> io::Result<()> {
                 bit_number += 1;
 
                 // Process the second nibble
-                bp0_byte |= (bitmap_byte >> 0 & 1) << bit_number;
+                bp0_byte |= (bitmap_byte      & 1) << bit_number;
                 bp1_byte |= (bitmap_byte >> 1 & 1) << bit_number;
                 bp2_byte |= (bitmap_byte >> 2 & 1) << bit_number;
 

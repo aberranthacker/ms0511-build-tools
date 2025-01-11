@@ -60,7 +60,7 @@ if bits_per_pixel < options.bpp
   raise "#{options.src_filename} has #{bits_per_pixel}bpp," \
         " which is less than resulting #{options.bpp}bpp."
 end
-raise "#{options.src_filename} : Compression is not supported." unless compression == 0
+raise "#{options.src_filename} : Compression is not supported." unless compression.zero?
 
 if image_width % 8 != 0
   puts "#{options.src_filename} \u001b[31;1mWARNING\u001b[0m: " \
@@ -80,7 +80,7 @@ bit_number = 0
 
 if bits_per_pixel == 8
   (0...bitmap.length).step(row_width_with_padding).to_a.reverse.each do |row_idx|
-    (0...row_width).each do |col_idx|
+    row_width.times do |col_idx|
       bitmap_byte = bitmap[row_idx + col_idx]
 
       bp0_byte |= (bitmap_byte >> 0 & 1) << bit_number
@@ -109,7 +109,7 @@ if bits_per_pixel == 8
   end
 elsif bits_per_pixel == 4
   (0...bitmap.length).step(row_width_with_padding).to_a.reverse.each do |row_idx|
-    (0...row_width).each do |col_idx|
+    row_width.times do |col_idx|
       bitmap_byte = bitmap[row_idx + col_idx]
 
       bp0_byte |= (bitmap_byte >> 4 & 1) << bit_number

@@ -34,8 +34,8 @@ def generate_s_file(sprites_dir, level_name, s_file_idx)
       next if spritename.include?('_mask')
 
       bmp = File.binread(File.join(sprites_dir, "#{spritename}.#{s_file_idx}.bmp"))
-      image_width        = bmp[0x12,4].unpack1('V')
-      image_height       = bmp[0x16,4].unpack1('V')
+      image_width        = bmp[0x12, 4].unpack1('V')
+      image_height       = bmp[0x16, 4].unpack1('V')
 
       spritename_camelcase = spritename.split('_').map(&:capitalize).join
       f.puts("   # sprite #{sprite_idx} #{spritename_camelcase}")
@@ -43,15 +43,15 @@ def generate_s_file(sprites_dir, level_name, s_file_idx)
       if spritenames.include?("#{spritename}_mask")
         f.puts("    .word #{spritename_camelcase}Mask # bit-mask offset")
       else
-        f.puts("    .word 0 # bit-mask offset")
+        f.puts('    .word 0 # bit-mask offset')
       end
       f.puts("    .byte #{image_height} # height of the sprite")
-      f.puts("    .byte 0 # Y offset")
+      f.puts('    .byte 0 # Y offset')
       f.puts("    .byte #{image_width / 4} # witdh")
       if spritenames.include?("#{spritename}_mask")
-        f.puts("    .byte SPR_HAS_MASK # attributes")
+        f.puts('    .byte SPR_HAS_MASK # attributes')
       else
-        f.puts("    .byte SPR_TURBO # attributes")
+        f.puts('    .byte SPR_TURBO # attributes')
       end
       f.puts
 

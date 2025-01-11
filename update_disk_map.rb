@@ -1,6 +1,16 @@
 #!/usr/bin/ruby
 
+# Скрипт прописывает размеры бинарных файлов и их начальные блоки на диске
+# Для этого необходимы:
+# FILESLIST_FILENAME - список файлов
+# MAP_FILENAME - карта UPDATED_FILENAME созданная ликовщиком
+# UPDATED_FILENAME - файл в который будут прописаны метаданные
+#                    должен содеражать метки, соответствующие файлам
+#                    из FILESLIST_FILENAME
+# ADDR - стартовый адрес целевого файла
+
 require 'optparse'
+require 'pathname'
 require_relative 'dsk_image_constants'
 
 options = Struct.new(:fileslist_filename, :map_filename, :updated_filename, :entry).new
@@ -19,15 +29,19 @@ end.parse!
 
 fileslist = File.readlines(options.fileslist_filename, chomp: true)
 
-metadata = fileslist.map do |filename|
-  [filename[6..], { address: 0, size: File.size(filename) }]
+metadata = fileslist.map do |pathname|
+  basename = Pathname.new(pathname).basename.to_s
+
+  [basename, { address: 0, size: File.size(pathname) }]
 end.to_h
 
+# Получим адреса меток из мап-файла
 File.read(options.map_filename).each_line do |line|
-  fileslist.each do |file_name|
-    key = file_name[6..]
-    if /0x\p{XDigit}{16}\s+#{key}/.match?(line)
-      metadata[key].update(address: line[/0x\p{XDigit}{16}/].to_i(16))
+  fileslist.each do |pathname|
+    basename = Pathname.new(pathname).basename.to_s
+
+    if /0x\p{XDigit}{16}\s+#{basename}/.match?(line)
+      metadata[basename].update(address: line[/0x\p{XDigit}{16}/].to_i(16))
     end
   end
 end
