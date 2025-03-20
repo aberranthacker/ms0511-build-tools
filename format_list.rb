@@ -8,8 +8,9 @@ end
 INSTR_REGEX = /^(?<ln>\s+\d+)\s+(?<addr>[0-9a-f]+)\s+(?<opcode>[0-9A-F]+)\s+(?<text>.+)$/
 
 stdout_next_line = false
+dst_fname = ARGV[0] == '-p' ? 'build/ppu_subtitles.lst' : 'build/subtitles.lst'
 
-File.open('build/subtitles.lst', 'a+') do |f|
+File.open(dst_fname, 'a+') do |f|
   $stdin.read.each_line do |line|
     unless (matches = line.b.chomp.match(INSTR_REGEX))
       stdout_next_line = true if /^\s*\d+\s+;:bpt/.match?(line.b)
