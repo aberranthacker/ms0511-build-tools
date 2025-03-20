@@ -9,7 +9,7 @@ module Encoders
     extend self
 
     def call(src, debug: false)
-      src = src.unpack('C*')
+      # src = src.bytes
       buffer = []
 
       seq_block_offset = 0
@@ -33,27 +33,29 @@ module Encoders
            (seq_block_size == 0x1FFF || var_block_size - seq_block_size == 0x1FFF)
           if var_block_offset < seq_block_offset
             # Special case at the end of input stream
-            var_size = if (current_offset == src.length && seq_block_size < 2)
+            var_size = if current_offset == src.length && seq_block_size < 2
                          var_block_size
                        else
                          var_block_size - seq_block_size
                        end
 
             coded_size = var_size + (var_size < 256 / 8 ? 1 : 2)
-            sprintf("RLE  at\t%06o\tVAR  %06o  %06o\t",
-                    var_block_offset + 512,
-                    var_size,
-                    coded_size) if debug
+            if debug
+              format("RLE  at\t%<offset>06o\tVAR  %<var_size>06o  %<coded_size>06o\t",
+                     offset: var_block_offset + 512,
+                     var_size:,
+                     coded_size:)
+            end
             coded_size_total += coded_size
 
             flag_byte = 0x40
             if var_size < 256 / 8
-              sprintf("%02x ", (flag_byte | var_size)) if debug
+              format('%02x ', (flag_byte | var_size)) if debug
               buffer << (flag_byte | var_size)
             else
-              sprintf("%02x ", (0x80 | flag_byte | ((var_size & 0x1F00) >> 8))) if debug
+              format('%02x ', (0x80 | flag_byte | ((var_size & 0x1F00) >> 8))) if debug
               buffer << (0x80 | flag_byte | ((var_size & 0x1F00) >> 8))
-              sprintf("%02x ", (var_size & 0xFF)) if debug
+              format('%02x ', (var_size & 0xFF)) if debug
               buffer << (var_size & 0xFF)
             end
 
@@ -68,13 +70,16 @@ module Encoders
           if (var_block_offset < seq_block_offset && seq_block_size > 1) ||
              (var_block_offset == seq_block_offset && var_block_size == seq_block_size)
             coded_size = seq_block_size < 256 / 8 ? 1 : 2
-            coded_size += previous_byte.zero || previous_byte == 255 ? 0 : 1
+            coded_size += previous_byte.zero? || previous_byte == 255 ? 0 : 1
 
-            sprintf("RLE  at\t%06o\tSEQ  %06o  %06o\t%02x\n",
-                    seq_block_offset + 512,
-                    seq_block_size,
-                    coded_size,
-                    previous_byte) if debug
+            if debug
+              format("RLE  at\t%<offset>06o\tSEQ  %<seq_block_size>06o  " \
+                     "%<coded_size>06o\t%<previous_byte>02x\n",
+                     offset: seq_block_offset + 512,
+                     seq_block_size:,
+                     coded_size:,
+                     previous_byte:)
+            end
 
             coded_size_total += coded_size
             flag_byte = if previous_byte.zero?
@@ -90,7 +95,7 @@ module Encoders
               buffer << (seq_block_size & 0xFF)
             end
 
-            buffer << previous_byte unless previous_byte == 0 || previous_byte == 255
+            buffer << previous_byte unless [0, 255].include?(previous_byte)
           end
 
           seq_block_offset = current_offset
@@ -114,14 +119,22 @@ module Encoders
         previous_byte = current_byte
       end
 
+      ratio = (buffer.count * 100.0 / src.length).round(2)
+      times = (src.length.to_f / buffer.count).round(2)
       puts "RLE input size #{src.length} bytes"
-      puts "RLE output size #{coded_size_total} bytes #{coded_size_total * 100.0 / src.length}%"
+      puts "RLE output size #{buffer.count} bytes (#{ratio}% of original, #{times}x smaller)"
 
       buffer.pack('C*')
     end
   end
 end
 
-src = File.binread('../MS-DOS-Robots-05-22-2023/Robots/RUSHING.ADL')
-dst = Encoders::Rle.call(src, debug: true)
-File.binwrite('rushing.adl.rle', dst)
+src = File.binread("sound/Rushin' In.adl").bytes
+
+src_even = []
+src_odd = []
+(src.length / 2 + 1).times { |i| src_even << src[i * 2] }
+(src.length / 2 + 1).times { |i| src_odd << src[i * 2 + 1] }
+
+File.binwrite('rushing.adl.even', Encoders::Rle.call(src_even, debug: true))
+File.binwrite('rushing.adl.odd', Encoders::Rle.call(src_odd, debug: true))
