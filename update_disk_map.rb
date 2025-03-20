@@ -47,6 +47,9 @@ File.read(options.map_filename).each_line do |line|
 end
 
 bootstrap_bin = File.binread(options.updated_filename).unpack('v*')
+if File.exist?("#{options.updated_filename}._")
+  options.entry = File.read("#{options.updated_filename}._").split(',').first.to_i
+end
 
 current_block_num = 0
 
